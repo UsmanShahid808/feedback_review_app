@@ -28,12 +28,12 @@ class _UserShellState extends State<UserShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: AppColors.scaffoldBg(context),
       body: IndexedStack(index: _index, children: _screens),
       bottomNavigationBar: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.cardColor(context),
           boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 18, offset: const Offset(0, -4))],
         ),
         child: SafeArea(

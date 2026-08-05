@@ -53,7 +53,7 @@ class _SubmitFeedbackScreenState extends State<SubmitFeedbackScreen> {
         _category = FeedbackCategory.task;
         _loading = false;
       });
-      showAppToast(context, 'Feedback submitted. Thank you!');
+      await SuccessCelebration.show(context, message: 'Feedback submitted.\nThank you!');
     } catch (e) {
       if (!mounted) return;
       setState(() => _loading = false);
@@ -76,7 +76,7 @@ class _SubmitFeedbackScreenState extends State<SubmitFeedbackScreen> {
               FadeInDown(
                 delay: Duration(milliseconds: 80),
                 child: Text('Rate a task, course or service and tell us more.',
-                    style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+                    style: TextStyle(color: AppColors.textSecondaryC(context), fontSize: 14)),
               ),
               const SizedBox(height: 28),
 
@@ -107,14 +107,14 @@ class _SubmitFeedbackScreenState extends State<SubmitFeedbackScreen> {
                       selected: selected,
                       onSelected: (_) => setState(() => _category = c),
                       selectedColor: AppColors.violet,
-                      backgroundColor: Colors.white,
+                      backgroundColor: AppColors.cardColor(context),
                       labelStyle: TextStyle(
-                        color: selected ? Colors.white : AppColors.textPrimary,
+                        color: selected ? Colors.white : AppColors.textPrimaryC(context),
                         fontWeight: FontWeight.w600,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
-                        side: BorderSide(color: selected ? Colors.transparent : AppColors.border),
+                        side: BorderSide(color: selected ? Colors.transparent : AppColors.borderColor(context)),
                       ),
                     );
                   }).toList(),

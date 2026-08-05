@@ -45,4 +45,22 @@ class FeedbackService {
   Future<void> deleteFeedback(String feedbackId) async {
     await _col.doc(feedbackId).delete();
   }
+
+  /// Lets the original author edit their own feedback (title/message/
+  /// rating/category) — only allowed while it's still Pending, both here
+  /// and enforced server-side in firestore.rules.
+  Future<void> updateFeedback({
+    required String feedbackId,
+    required String title,
+    required String message,
+    required double rating,
+    required FeedbackCategory category,
+  }) async {
+    await _col.doc(feedbackId).update({
+      'title': title,
+      'message': message,
+      'rating': rating,
+      'category': category.name,
+    });
+  }
 }

@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:animate_do/animate_do.dart';
 import '../theme/app_theme.dart';
 import '../models/feedback_model.dart';
 
@@ -242,9 +243,9 @@ class FeedbackCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.cardColor(context),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: AppColors.borderColor(context)),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -286,7 +287,7 @@ class FeedbackCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     item.title,
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppColors.textPrimary),
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppColors.textPrimaryC(context)),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -295,13 +296,13 @@ class FeedbackCard extends StatelessWidget {
                     item.message,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.4),
+                    style: TextStyle(fontSize: 13, color: AppColors.textSecondaryC(context), height: 1.4),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     (showUserName ? '${item.userName} · ' : '') +
                         DateFormat('MMM d, yyyy · h:mm a').format(item.createdAt),
-                    style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                    style: TextStyle(fontSize: 11, color: AppColors.textSecondaryC(context)),
                   ),
                 ],
               ),
@@ -333,9 +334,9 @@ class StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.cardColor(context),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.borderColor(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -347,12 +348,132 @@ class StatCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(value,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textPrimaryC(context))),
           const SizedBox(height: 2),
-          Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+          Text(label, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryC(context))),
         ],
       ),
     );
+  }
+}
+
+/// Shown instead of an endless spinner when a Firestore stream errors out
+/// (e.g. missing index, denied rules) — makes the real problem visible.
+class StreamErrorState extends StatelessWidget {
+  final Object? error;
+  const StreamErrorState({super.key, required this.error});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.error_outline_rounded, size: 40, color: Colors.redAccent),
+            const SizedBox(height: 14),
+            Text('Could not load data', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppColors.textPrimaryC(context))),
+            const SizedBox(height: 8),
+            Text(
+              '$error',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondaryC(context)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A short, joyful celebration overlay shown right after a successful
+/// feedback submission — auto-dismisses itself, no need to tap anything.
+class SuccessCelebration extends StatelessWidget {
+  final String message;
+  const SuccessCelebration({super.key, this.message = 'Thank you!'});
+
+  static Future<void> show(BuildContext context, {String message = 'Thank you!'}) {
+    return showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'celebration',
+      barrierColor: Colors.black.withOpacity(0.35),
+      transitionDuration: const Duration(milliseconds: 250),
+      pageBuilder: (context, anim1, anim2) => SuccessCelebration(message: message),
+      transitionBuilder: (context, anim, secondaryAnim, child) {
+        return FadeTransition(opacity: anim, child: child);
+      },
+    ).then((_) {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Auto-dismiss after a short beat so the person doesn't have to tap.
+    Future.delayed(const Duration(milliseconds: 1400), () {
+      if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+    });
+
+    return Center(
+      child: Material(
+        color: Colors.transparent,
+        child: Container(
+          width: 220,
+          padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+          decoration: BoxDecoration(
+            color: AppColors.cardColor(context),
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 30, offset: const Offset(0, 12))],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  ElasticIn(
+                    duration: const Duration(milliseconds: 700),
+                    child: Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(gradient: AppColors.heroGradient, shape: BoxShape.circle),
+                      child: const Icon(Icons.check_rounded, color: Colors.white, size: 38),
+                    ),
+                  ),
+                  ..._sparkles(),
+                ],
+              ),
+              const SizedBox(height: 18),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: AppColors.textPrimaryC(context)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _sparkles() {
+    const offsets = [
+      Offset(-38, -30),
+      Offset(40, -26),
+      Offset(-34, 30),
+      Offset(36, 32),
+    ];
+    final colors = [AppColors.sentimentHigh, AppColors.sentimentMid, AppColors.skyGlow, AppColors.sentimentLow];
+    return List.generate(offsets.length, (i) {
+      return Transform.translate(
+        offset: offsets[i],
+        child: FadeIn(
+          delay: Duration(milliseconds: 200 + i * 80),
+          duration: const Duration(milliseconds: 400),
+          child: Icon(Icons.star_rounded, color: colors[i], size: 16 + (i.isEven ? 4 : 0)),
+        ),
+      );
+    });
   }
 }
 
@@ -379,11 +500,11 @@ class EmptyState extends StatelessWidget {
               child: Icon(icon, size: 36, color: AppColors.violet),
             ),
             const SizedBox(height: 18),
-            Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+            Text(title, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.textPrimaryC(context))),
             const SizedBox(height: 6),
             Text(message,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.5)),
+                style: TextStyle(fontSize: 13, color: AppColors.textSecondaryC(context), height: 1.5)),
           ],
         ),
       ),

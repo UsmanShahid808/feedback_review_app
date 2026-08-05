@@ -52,6 +52,25 @@ class AppColors {
   static LinearGradient sentimentGradient() => const LinearGradient(
         colors: [sentimentLow, sentimentMid, sentimentHigh],
       );
+
+  // -------------------------------------------------------------------
+  // Context-aware helpers — pick the right shade for light vs dark mode.
+  // Widgets should use these instead of the raw constants above for any
+  // surface/text that needs to flip with the theme.
+  // -------------------------------------------------------------------
+  static bool _isDark(BuildContext context) => Theme.of(context).brightness == Brightness.dark;
+
+  static Color cardColor(BuildContext context) => _isDark(context) ? inkElevated : surfaceCard;
+
+  static Color scaffoldBg(BuildContext context) => _isDark(context) ? ink : surface;
+
+  static Color borderColor(BuildContext context) =>
+      _isDark(context) ? Colors.white.withOpacity(0.08) : border;
+
+  static Color textPrimaryC(BuildContext context) => _isDark(context) ? textOnDark : textPrimary;
+
+  static Color textSecondaryC(BuildContext context) =>
+      _isDark(context) ? textOnDarkMuted : textSecondary;
 }
 
 class AppTheme {
@@ -132,6 +151,66 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
       dividerColor: AppColors.border,
+    );
+  }
+
+  static ThemeData get dark {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: AppColors.ink,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: AppColors.violet,
+        brightness: Brightness.dark,
+        primary: AppColors.violet,
+        surface: AppColors.inkElevated,
+      ),
+      textTheme: _textTheme(AppColors.textOnDark),
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: false,
+        iconTheme: const IconThemeData(color: AppColors.textOnDark),
+        titleTextStyle: GoogleFonts.sora(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: AppColors.textOnDark,
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.inkElevated,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.08)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.08)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.violet, width: 1.6),
+        ),
+        hintStyle: GoogleFonts.inter(color: AppColors.textOnDarkMuted, fontSize: 14),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.violet,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          minimumSize: const Size.fromHeight(54),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          textStyle: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600),
+        ),
+      ),
+      cardTheme: CardThemeData(
+        color: AppColors.inkElevated,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      ),
+      dividerColor: Colors.white.withOpacity(0.08),
     );
   }
 }

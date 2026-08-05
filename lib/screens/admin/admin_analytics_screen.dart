@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../theme/app_theme.dart';
 import '../../services/feedback_service.dart';
 import '../../models/feedback_model.dart';
+import '../../widgets/common_widgets.dart';
 
 class AdminAnalyticsScreen extends StatelessWidget {
   const AdminAnalyticsScreen({super.key});
@@ -15,6 +16,9 @@ class AdminAnalyticsScreen extends StatelessWidget {
       child: StreamBuilder<List<FeedbackModel>>(
         stream: feedbackService.streamAllFeedback(),
         builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return StreamErrorState(error: snapshot.error);
+          }
           final all = snapshot.data ?? [];
 
           if (!snapshot.hasData) {
@@ -36,9 +40,80 @@ class AdminAnalyticsScreen extends StatelessWidget {
             children: [
               Text('Analytics', style: Theme.of(context).textTheme.displayMedium),
               const SizedBox(height: 6),
-              const Text('Trends across every submission, updated live.',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 13.5)),
+              Text('Trends across every submission, updated live.',
+                  style: TextStyle(color: AppColors.textSecondaryC(context), fontSize: 13.5)),
               const SizedBox(height: 26),
+
+              // --- Line chart: submissions over the last 7 days ---
+              _ChartCard(
+                title: 'Submissions — last 7 days',
+                child: SizedBox(
+                  height: 200,
+                  child: all.isEmpty
+                      ? Center(child: Text('No data yet', style: TextStyle(color: AppColors.textSecondaryC(context))))
+                      : Builder(builder: (context) {
+                          final now = DateTime.now();
+                          final days = List.generate(7, (i) => DateTime(now.year, now.month, now.day).subtract(Duration(days: 6 - i)));
+                          final counts = days.map((d) {
+                            return all.where((e) =>
+                                e.createdAt.year == d.year &&
+                                e.createdAt.month == d.month &&
+                                e.createdAt.day == d.day).length;
+                          }).toList();
+                          final maxY = (counts.isEmpty ? 1 : counts.reduce((a, b) => a > b ? a : b)).toDouble();
+                          const weekdayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+                          return LineChart(
+                            LineChartData(
+                              minY: 0,
+                              maxY: maxY < 4 ? 4 : maxY + 1,
+                              gridData: const FlGridData(show: false),
+                              borderData: FlBorderData(show: false),
+                              titlesData: FlTitlesData(
+                                leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                bottomTitles: AxisTitles(
+                                  sideTitles: SideTitles(
+                                    showTitles: true,
+                                    interval: 1,
+                                    getTitlesWidget: (value, meta) {
+                                      final idx = value.toInt();
+                                      if (idx < 0 || idx >= days.length) return const SizedBox();
+                                      return Padding(
+                                        padding: const EdgeInsets.only(top: 8),
+                                        child: Text(
+                                          weekdayLabels[days[idx].weekday - 1],
+                                          style: TextStyle(fontSize: 11, color: AppColors.textSecondaryC(context)),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                              lineBarsData: [
+                                LineChartBarData(
+                                  spots: List.generate(counts.length, (i) => FlSpot(i.toDouble(), counts[i].toDouble())),
+                                  isCurved: true,
+                                  color: AppColors.violet,
+                                  barWidth: 3,
+                                  dotData: const FlDotData(show: true),
+                                  belowBarData: BarAreaData(
+                                    show: true,
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [AppColors.violet.withOpacity(0.25), AppColors.violet.withOpacity(0.0)],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                ),
+              ),
+              const SizedBox(height: 20),
 
               // --- Bar chart: average rating per category ---
               _ChartCard(
@@ -46,7 +121,7 @@ class AdminAnalyticsScreen extends StatelessWidget {
                 child: SizedBox(
                   height: 220,
                   child: all.isEmpty
-                      ? const Center(child: Text('No data yet', style: TextStyle(color: AppColors.textSecondary)))
+                      ? Center(child: Text('No data yet', style: TextStyle(color: AppColors.textSecondaryC(context))))
                       : BarChart(
                           BarChartData(
                             maxY: 5,
@@ -65,7 +140,7 @@ class AdminAnalyticsScreen extends StatelessWidget {
                                     if (idx < 0 || idx >= cats.length) return const SizedBox();
                                     return Padding(
                                       padding: const EdgeInsets.only(top: 8),
-                                      child: Text(cats[idx].label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                                      child: Text(cats[idx].label, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryC(context))),
                                     );
                                   },
                                 ),
@@ -103,7 +178,7 @@ class AdminAnalyticsScreen extends StatelessWidget {
                 child: all.isEmpty
                     ? const SizedBox(
                         height: 160,
-                        child: Center(child: Text('No data yet', style: TextStyle(color: AppColors.textSecondary))))
+                        child: Center(child: Text('No data yet', style: TextStyle(color: AppColors.textSecondaryC(context)))))
                     : Row(
                         children: [
                           SizedBox(
@@ -141,9 +216,9 @@ class AdminAnalyticsScreen extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                _legendRow('Pending', AppColors.sentimentMid, byStatus[FeedbackStatus.pending] ?? 0),
-                                _legendRow('Reviewed', AppColors.skyGlow, byStatus[FeedbackStatus.reviewed] ?? 0),
-                                _legendRow('Resolved', AppColors.sentimentHigh, byStatus[FeedbackStatus.resolved] ?? 0),
+                                _legendRow(context, 'Pending', AppColors.sentimentMid, byStatus[FeedbackStatus.pending] ?? 0),
+                                _legendRow(context, 'Reviewed', AppColors.skyGlow, byStatus[FeedbackStatus.reviewed] ?? 0),
+                                _legendRow(context, 'Resolved', AppColors.sentimentHigh, byStatus[FeedbackStatus.resolved] ?? 0),
                               ],
                             ),
                           ),
@@ -167,7 +242,7 @@ class AdminAnalyticsScreen extends StatelessWidget {
                           Row(
                             children: [
                               Expanded(child: Text(c.label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13))),
-                              Text('$count', style: const TextStyle(color: AppColors.textSecondary, fontSize: 12.5)),
+                              Text('$count', style: TextStyle(color: AppColors.textSecondaryC(context), fontSize: 12.5)),
                             ],
                           ),
                           const SizedBox(height: 6),
@@ -193,7 +268,7 @@ class AdminAnalyticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _legendRow(String label, Color color, int count) {
+  Widget _legendRow(BuildContext context, String label, Color color, int count) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -201,7 +276,7 @@ class AdminAnalyticsScreen extends StatelessWidget {
           Container(width: 10, height: 10, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
           const SizedBox(width: 8),
           Expanded(child: Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600))),
-          Text('$count', style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+          Text('$count', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryC(context))),
         ],
       ),
     );
@@ -218,7 +293,7 @@ class _ChartCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.border)),
+      decoration: BoxDecoration(color: AppColors.cardColor(context), borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.borderColor(context))),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

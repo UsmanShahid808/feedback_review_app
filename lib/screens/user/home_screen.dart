@@ -77,6 +77,9 @@ class HomeScreen extends StatelessWidget {
           StreamBuilder<List<FeedbackModel>>(
             stream: feedbackService.streamUserFeedback(uid),
             builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return SliverToBoxAdapter(child: StreamErrorState(error: snapshot.error));
+              }
               if (!snapshot.hasData) {
                 return const SliverToBoxAdapter(
                   child: Padding(

@@ -17,7 +17,15 @@ class MyFeedbackScreen extends StatefulWidget {
 class _MyFeedbackScreenState extends State<MyFeedbackScreen> {
   final _authService = AuthService();
   final _feedbackService = FeedbackService();
+  final _searchCtrl = TextEditingController();
   FeedbackCategory? _filter;
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +39,26 @@ class _MyFeedbackScreenState extends State<MyFeedbackScreen> {
               children: [
                 Expanded(child: Text('My History', style: Theme.of(context).textTheme.displayMedium)),
               ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(22, 6, 22, 10),
+            child: TextField(
+              controller: _searchCtrl,
+              onChanged: (v) => setState(() => _query = v.trim().toLowerCase()),
+              decoration: InputDecoration(
+                hintText: 'Search your feedback...',
+                prefixIcon: const Icon(Icons.search_rounded),
+                suffixIcon: _query.isEmpty
+                    ? null
+                    : IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        onPressed: () {
+                          _searchCtrl.clear();
+                          setState(() => _query = '');
+                        },
+                      ),
+              ),
             ),
           ),
           Padding(
@@ -50,6 +78,9 @@ class _MyFeedbackScreenState extends State<MyFeedbackScreen> {
             child: StreamBuilder<List<FeedbackModel>>(
               stream: _feedbackService.streamUserFeedback(uid),
               builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return StreamErrorState(error: snapshot.error);
+                }
                 if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
                 }
@@ -57,24 +88,37 @@ class _MyFeedbackScreenState extends State<MyFeedbackScreen> {
                 if (_filter != null) {
                   items = items.where((e) => e.category == _filter).toList();
                 }
+                if (_query.isNotEmpty) {
+                  items = items
+                      .where((e) =>
+                          e.title.toLowerCase().contains(_query) ||
+                          e.message.toLowerCase().contains(_query))
+                      .toList();
+                }
                 if (items.isEmpty) {
-                  return const EmptyState(
-                    title: 'Nothing here yet',
-                    message: 'Your submitted feedback will show up here once you send it.',
-                    icon: Icons.history_rounded,
+                  return EmptyState(
+                    title: _query.isNotEmpty ? 'No matches' : 'Nothing here yet',
+                    message: _query.isNotEmpty
+                        ? 'Try a different search term.'
+                        : 'Your submitted feedback will show up here once you send it.',
+                    icon: _query.isNotEmpty ? Icons.search_off_rounded : Icons.history_rounded,
                   );
                 }
-                return ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(22, 4, 22, 24),
-                  itemCount: items.length,
-                  itemBuilder: (context, i) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: FadeInUp(
-                      delay: Duration(milliseconds: 40 * (i % 8)),
-                      child: FeedbackCard(
-                        item: items[i],
-                        onTap: () => Navigator.of(context)
-                            .push(MaterialPageRoute(builder: (_) => FeedbackDetailScreen(item: items[i]))),
+                return RefreshIndicator(
+                  color: AppColors.violet,
+                  onRefresh: () async => Future.delayed(const Duration(milliseconds: 600)),
+                  child: ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(22, 4, 22, 24),
+                    itemCount: items.length,
+                    itemBuilder: (context, i) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: FadeInUp(
+                        delay: Duration(milliseconds: 40 * (i % 8)),
+                        child: FeedbackCard(
+                          item: items[i],
+                          onTap: () => Navigator.of(context)
+                              .push(MaterialPageRoute(builder: (_) => FeedbackDetailScreen(item: items[i]))),
+                        ),
                       ),
                     ),
                   ),
@@ -96,11 +140,11 @@ class _MyFeedbackScreenState extends State<MyFeedbackScreen> {
         selected: selected,
         onSelected: (_) => setState(() => _filter = value),
         selectedColor: AppColors.violet,
-        backgroundColor: Colors.white,
-        labelStyle: TextStyle(color: selected ? Colors.white : AppColors.textPrimary, fontWeight: FontWeight.w600),
+        backgroundColor: AppColors.cardColor(context),
+        labelStyle: TextStyle(color: selected ? Colors.white : AppColors.textPrimaryC(context), fontWeight: FontWeight.w600),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: BorderSide(color: selected ? Colors.transparent : AppColors.border),
+          side: BorderSide(color: selected ? Colors.transparent : AppColors.borderColor(context)),
         ),
       ),
     );

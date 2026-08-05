@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/common_widgets.dart';
 import '../../models/feedback_model.dart';
+import 'edit_feedback_screen.dart';
 
 class FeedbackDetailScreen extends StatelessWidget {
   final FeedbackModel item;
@@ -11,8 +12,26 @@ class FeedbackDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
-      appBar: AppBar(title: const Text('Feedback details')),
+      backgroundColor: AppColors.scaffoldBg(context),
+      appBar: AppBar(
+        title: const Text('Feedback details'),
+        actions: [
+          // Editing is only allowed while the item is still Pending —
+          // matches the server-side rule so the button never promises
+          // something the backend would reject.
+          if (item.status == FeedbackStatus.pending)
+            IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              tooltip: 'Edit',
+              onPressed: () async {
+                await Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => EditFeedbackScreen(item: item)),
+                );
+                if (context.mounted) Navigator.of(context).pop();
+              },
+            ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(22),
         child: Column(
@@ -31,14 +50,14 @@ class FeedbackDetailScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               '${item.userName} · ${DateFormat('MMM d, yyyy · h:mm a').format(item.createdAt)}',
-              style: const TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
+              style: TextStyle(color: AppColors.textSecondaryC(context), fontSize: 12.5),
             ),
             const SizedBox(height: 18),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18), border: Border.all(color: AppColors.border)),
-              child: Text(item.message, style: const TextStyle(fontSize: 14.5, height: 1.6, color: AppColors.textPrimary)),
+              decoration: BoxDecoration(color: AppColors.cardColor(context), borderRadius: BorderRadius.circular(18), border: Border.all(color: AppColors.borderColor(context))),
+              child: Text(item.message, style: TextStyle(fontSize: 14.5, height: 1.6, color: AppColors.textPrimaryC(context))),
             ),
             if (item.adminReply != null && item.adminReply!.isNotEmpty) ...[
               const SizedBox(height: 20),

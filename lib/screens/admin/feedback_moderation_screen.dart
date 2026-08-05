@@ -43,7 +43,7 @@ class _FeedbackModerationScreenState extends State<FeedbackModerationScreen> {
   Widget build(BuildContext context) {
     final item = widget.item;
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: AppColors.scaffoldBg(context),
       appBar: AppBar(
         title: const Text('Moderate feedback'),
         actions: [
@@ -71,7 +71,7 @@ class _FeedbackModerationScreenState extends State<FeedbackModerationScreen> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18), border: Border.all(color: AppColors.border)),
+              decoration: BoxDecoration(color: AppColors.cardColor(context), borderRadius: BorderRadius.circular(18), border: Border.all(color: AppColors.borderColor(context))),
               child: Text(item.message, style: const TextStyle(fontSize: 14.5, height: 1.6)),
             ),
             const SizedBox(height: 24),
@@ -86,9 +86,9 @@ class _FeedbackModerationScreenState extends State<FeedbackModerationScreen> {
                   selected: selected,
                   onSelected: (_) => _updateStatus(s),
                   selectedColor: AppColors.violet,
-                  backgroundColor: Colors.white,
-                  labelStyle: TextStyle(color: selected ? Colors.white : AppColors.textPrimary, fontWeight: FontWeight.w600),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: selected ? Colors.transparent : AppColors.border)),
+                  backgroundColor: AppColors.cardColor(context),
+                  labelStyle: TextStyle(color: selected ? Colors.white : AppColors.textPrimaryC(context), fontWeight: FontWeight.w600),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: selected ? Colors.transparent : AppColors.borderColor(context))),
                 );
               }).toList(),
             ),
