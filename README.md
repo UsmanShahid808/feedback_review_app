@@ -1,44 +1,3 @@
-# PulseFeedback — Feedback & Review App
-
-A cross-platform Flutter app (Android/iOS/Web) with a Firebase backend for
-collecting, managing, and analyzing feedback on tasks, courses, or
-services. Includes a user side (submit + track feedback) and an admin
-side (live dashboard, moderation, analytics charts).
-
-## What's included
-
-- Email/password authentication (Firebase Auth)
-- Real-time feedback submission and history (Cloud Firestore, live streams)
-- Star rating + animated "Sentiment Ring" visual on every rating
-- Category tagging (Task / Course / Service) and status workflow
-  (Pending → Reviewed → Resolved)
-- Admin dashboard: stat cards, filters, moderation screen with replies
-- Admin analytics: bar chart (avg rating per category), pie chart
-  (status breakdown), category volume bars — via `fl_chart`
-- Polished custom UI: gradient hero surfaces, Sora + Inter typography,
-  animated transitions (`animate_do`)
-- Firestore security rules included (`firestore.rules`)
-
-## Project structure
-
-```
-lib/
-  main.dart                     # App entry point, Firebase init
-  firebase_options.dart         # PLACEHOLDER — regenerate with FlutterFire CLI
-  theme/app_theme.dart          # Colors, gradients, typography, component themes
-  models/feedback_model.dart    # FeedbackModel + AppUser
-  services/
-    auth_service.dart           # Sign up / sign in / sign out / profile
-    feedback_service.dart       # Firestore CRUD + real-time streams
-  widgets/common_widgets.dart   # SentimentRing, StarRatingInput, GradientButton,
-                                 # FeedbackCard, StatCard, EmptyState
-  screens/
-    splash_screen.dart
-    auth/login_screen.dart, signup_screen.dart
-    user/  (bottom-nav shell, home, submit, history, detail, profile)
-    admin/ (bottom-nav shell, dashboard, moderation, analytics)
-```
-
 ## Step-by-step setup (A to Z)
 
 ### 1. Install prerequisites
@@ -53,7 +12,7 @@ flutter doctor
 
 ### 2. Get the project onto your machine
 Unzip the project you downloaded. This package contains the Dart
-source (`lib/`), `pubspec.yaml`, and Firestore rules — but not the
+source (`lib/`), `pubspec.yaml`, and Firestore rules - but not the
 native `android/`, `ios/`, `web/` platform folders (those are
 machine-generated). From inside the unzipped folder, generate them:
 ```bash
@@ -85,26 +44,45 @@ flutterfire configure
 - Select your Firebase project
 - Select the platforms you want (Android / iOS / Web)
 - This **overwrites** the placeholder `lib/firebase_options.dart` with
-  your real project's configuration — no manual key-copying needed.
+  your real project's configuration - no manual key-copying needed.
 
-For Android specifically, also make sure `android/app/build.gradle`
+If `flutterfire` isn't found after activating it, add Dart's global
+pub-cache `bin` folder to your PATH (the CLI prints the exact path to
+add when this happens).
+
+`flutterfire configure` also requires the official Firebase CLI to be
+installed:
+```bash
+npm install -g firebase-tools
+firebase login
+```
+
+For Android specifically, also make sure `android/app/build.gradle.kts`
 has a `minSdkVersion` of at least 21 (FlutterFire CLI usually handles
 this automatically).
 
 ### 5. Deploy the Firestore security rules
-Install the Firebase CLI if you don't have it:
-```bash
-npm install -g firebase-tools
-firebase login
-firebase init firestore   # point it at the same project, keep default file names
-```
-Copy the contents of `firestore.rules` (included in this project) into
-the generated `firestore.rules` file, then deploy:
-```bash
-firebase deploy --only firestore:rules
-```
+1. Firebase Console → **Firestore Database → Rules** tab
+2. Delete the existing content and paste in the contents of
+   `firestore.rules` (included in this project)
+3. Click **Publish**
 
-### 6. Run the app
+(Alternatively, via CLI: `firebase init firestore` then
+`firebase deploy --only firestore:rules`.)
+
+### 6. Create the required Firestore index
+The History and Home screens query by `userId` + `createdAt` together,
+which needs a composite index:
+1. Firebase Console → **Firestore Database → Indexes** tab → **Create Index**
+2. Collection ID: `feedback`
+3. Fields: `userId` (Ascending), `createdAt` (Descending)
+4. Create, and wait for status to switch from "Building" to "Enabled"
+   (usually 1-5 minutes)
+
+Tip: if you skip this step, the app will show a clear on-screen error
+with a link you can open to auto-create the correct index instead.
+
+### 7. Run the app
 ```bash
 flutter run
 ```
@@ -113,21 +91,22 @@ Pick a connected device/emulator when prompted. For web:
 flutter run -d chrome
 ```
 
-### 7. Try it out
-1. Sign up with a new account — **the very first account created
+### 8. Try it out
+1. Sign up with a new account - **the very first account created
    automatically becomes an admin** (see `AuthService.signUp`), so use
    it to explore the admin dashboard and analytics.
 2. Sign up a second account normally to test the regular user flow:
-   submit feedback, watch it appear instantly, see the admin reply
-   once you respond to it from the admin account.
+   submit feedback, watch it appear instantly, search/edit/delete it,
+   and see the admin reply once you respond to it from the admin account.
+3. Toggle Dark mode from the Profile tab.
 
-### 8. (Optional) Change the admin rule
+### 9. (Optional) Change the admin rule
 Auto-promoting the first sign-up is meant for quick demos. For a real
 rollout, remove that logic in `AuthService.signUp` and instead set
 `isAdmin: true` manually on specific users' documents inside the
 Firebase Console → Firestore → `users` collection.
 
-### 9. Build a release
+### 10. Build a release
 ```bash
 flutter build apk --release      # Android
 flutter build ios --release      # iOS (via Xcode)
@@ -135,8 +114,11 @@ flutter build web --release      # Web
 ```
 
 ## Notes
-- All screens use real-time Firestore streams — multiple devices stay
+- All screens use real-time Firestore streams - multiple devices stay
   in sync automatically, no manual refresh needed.
 - The "Sentiment Ring" and gradient system in `app_theme.dart` is the
   one visual idea reused everywhere ratings appear, so update the
   colors there to re-skin the whole app at once.
+- Editing/deleting feedback is only allowed while status is "Pending",
+  both in the UI and enforced server-side in `firestore.rules` - once
+  an admin reviews it, the item is locked for the original author.
