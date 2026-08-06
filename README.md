@@ -28,8 +28,6 @@ A mobile feedback collection and analytics app built with Flutter and Firebase, 
 |:---:|:---:|:---:|
 | ![Admin Dashboard](assets/screenshots/admin_dashboard.png) | ![Moderation](assets/screenshots/moderation.png) | ![Analytics](assets/screenshots/analytics.png) |
 
-> *Add your own screenshots to `assets/screenshots/` with these exact filenames and they'll appear above automatically on GitHub.*
-
 ## ✨ Features
 
 ### 👤 For Users
@@ -161,7 +159,7 @@ build/app/outputs/flutter-apk/app-release.apk
 
 ## 🔑 Key Implementation Details
 
-- **Authentication**: `AuthService` wraps `firebase_auth` calls and auto-promotes the very first signed-up account to admin for quick demo purposes — swap this for manual role assignment in production.
+- **Authentication**: `AuthService` wraps `firebase_auth` calls and auto-promotes the very first signed-up account to admin for quick demo purposes - swap this for manual role assignment in production.
 - **Real-time data**: `FeedbackService` exposes Firestore streams (`streamUserFeedback`, `streamAllFeedback`) so every list on both the user and admin side updates live with zero manual refresh.
 - **Security**: `firestore.rules` enforces that users can only read/edit/delete their own feedback (and only while it's "Pending"), while admins have full read/write access - mirrored in the UI so buttons never promise something the backend would reject.
 - **Theming**: a single `ThemeController` (via `provider`) drives light/dark mode app-wide; all custom widgets pull colors through context-aware helpers in `AppColors` instead of hardcoded values.
@@ -169,6 +167,7 @@ build/app/outputs/flutter-apk/app-release.apk
 ## 👨‍💻 Developer
 
 **Usman Shahid**
+<br>
 Flutter + Firebase Feedback & Review System
 
 ---
