@@ -24,6 +24,7 @@ A mobile feedback collection and analytics app built with Flutter and Firebase, 
 |:---:|:---:|:---:|
 | ![History](assets/screenshots/history.jpeg) | ![Detail](assets/screenshots/detail.jpeg) | ![Dark Mode](assets/screenshots/dark_mode.jpeg) |
 
+
 ## ✨ Features
 
 ### 👤 For Users
