@@ -245,7 +245,10 @@ class FeedbackCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.cardColor(context),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.borderColor(context)),
+          border: Border.all(
+            color: item.seenByUser ? AppColors.borderColor(context) : AppColors.violet,
+            width: item.seenByUser ? 1 : 1.4,
+          ),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -273,6 +276,14 @@ class FeedbackCard extends StatelessWidget {
                           ),
                         ),
                       ),
+                      if (!item.seenByUser) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(color: AppColors.violet, borderRadius: BorderRadius.circular(20)),
+                          child: const Text('NEW', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white)),
+                        ),
+                      ],
                       const Spacer(),
                       Container(
                         width: 8,
@@ -300,7 +311,7 @@ class FeedbackCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    (showUserName ? '${item.userName} · ' : '') +
+                    (showUserName ? '${item.displayName} · ' : '') +
                         DateFormat('MMM d, yyyy · h:mm a').format(item.createdAt),
                     style: TextStyle(fontSize: 11, color: AppColors.textSecondaryC(context)),
                   ),
@@ -358,7 +369,7 @@ class StatCard extends StatelessWidget {
 }
 
 /// Shown instead of an endless spinner when a Firestore stream errors out
-/// (e.g. missing index, denied rules) — makes the real problem visible.
+/// (e.g. missing index, denied rules) - makes the real problem visible.
 class StreamErrorState extends StatelessWidget {
   final Object? error;
   const StreamErrorState({super.key, required this.error});
@@ -388,7 +399,7 @@ class StreamErrorState extends StatelessWidget {
 }
 
 /// A short, joyful celebration overlay shown right after a successful
-/// feedback submission — auto-dismisses itself, no need to tap anything.
+/// feedback submission - auto-dismisses itself, no need to tap anything.
 class SuccessCelebration extends StatelessWidget {
   final String message;
   const SuccessCelebration({super.key, this.message = 'Thank you!'});

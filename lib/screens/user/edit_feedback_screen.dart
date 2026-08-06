@@ -5,7 +5,7 @@ import '../../widgets/common_widgets.dart';
 import '../../utils/toast.dart';
 import '../../models/feedback_model.dart';
 
-/// Lets the feedback's own author edit or delete it — only reachable
+/// Lets the feedback's own author edit or delete it - only reachable
 /// while the item is still "Pending" (once an admin has reviewed it,
 /// editing is locked, matching the Firestore rules).
 class EditFeedbackScreen extends StatefulWidget {

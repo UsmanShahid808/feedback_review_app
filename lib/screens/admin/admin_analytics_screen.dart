@@ -46,7 +46,7 @@ class AdminAnalyticsScreen extends StatelessWidget {
 
               // --- Line chart: submissions over the last 7 days ---
               _ChartCard(
-                title: 'Submissions — last 7 days',
+                title: 'Submissions - last 7 days',
                 child: SizedBox(
                   height: 200,
                   child: all.isEmpty
@@ -176,7 +176,7 @@ class AdminAnalyticsScreen extends StatelessWidget {
               _ChartCard(
                 title: 'Status breakdown',
                 child: all.isEmpty
-                    ? const SizedBox(
+                    ? SizedBox(
                         height: 160,
                         child: Center(child: Text('No data yet', style: TextStyle(color: AppColors.textSecondaryC(context)))))
                     : Row(

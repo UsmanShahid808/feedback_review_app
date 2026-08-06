@@ -2,21 +2,40 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/common_widgets.dart';
+import '../../services/feedback_service.dart';
 import '../../models/feedback_model.dart';
 import 'edit_feedback_screen.dart';
 
-class FeedbackDetailScreen extends StatelessWidget {
+class FeedbackDetailScreen extends StatefulWidget {
   final FeedbackModel item;
   const FeedbackDetailScreen({super.key, required this.item});
 
   @override
+  State<FeedbackDetailScreen> createState() => _FeedbackDetailScreenState();
+}
+
+class _FeedbackDetailScreenState extends State<FeedbackDetailScreen> {
+  final _feedbackService = FeedbackService();
+
+  @override
+  void initState() {
+    super.initState();
+    // Clear the "New" badge the moment the author opens an item that
+    // has an unseen admin reply / status change.
+    if (!widget.item.seenByUser) {
+      _feedbackService.markSeen(widget.item.id);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final item = widget.item;
     return Scaffold(
       backgroundColor: AppColors.scaffoldBg(context),
       appBar: AppBar(
         title: const Text('Feedback details'),
         actions: [
-          // Editing is only allowed while the item is still Pending —
+          // Editing is only allowed while the item is still Pending -
           // matches the server-side rule so the button never promises
           // something the backend would reject.
           if (item.status == FeedbackStatus.pending)
@@ -49,7 +68,7 @@ class FeedbackDetailScreen extends StatelessWidget {
             Text(item.title, style: Theme.of(context).textTheme.headlineMedium),
             const SizedBox(height: 8),
             Text(
-              '${item.userName} · ${DateFormat('MMM d, yyyy · h:mm a').format(item.createdAt)}',
+              '${item.displayName} · ${DateFormat('MMM d, yyyy · h:mm a').format(item.createdAt)}',
               style: TextStyle(color: AppColors.textSecondaryC(context), fontSize: 12.5),
             ),
             const SizedBox(height: 18),

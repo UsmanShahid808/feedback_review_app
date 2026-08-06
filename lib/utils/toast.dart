@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
 /// Simple SnackBar-based toast used across the app instead of a third
-/// party plugin — avoids native embedding / SDK version conflicts.
+/// party plugin - avoids native embedding / SDK version conflicts.
 void showAppToast(BuildContext context, String message) {
   ScaffoldMessenger.of(context).hideCurrentSnackBar();
   ScaffoldMessenger.of(context).showSnackBar(

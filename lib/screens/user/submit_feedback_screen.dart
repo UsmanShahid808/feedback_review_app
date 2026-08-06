@@ -24,6 +24,7 @@ class _SubmitFeedbackScreenState extends State<SubmitFeedbackScreen> {
   FeedbackCategory _category = FeedbackCategory.task;
   double _rating = 4;
   bool _loading = false;
+  bool _anonymous = false;
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
@@ -42,6 +43,7 @@ class _SubmitFeedbackScreenState extends State<SubmitFeedbackScreen> {
           rating: _rating,
           category: _category,
           createdAt: DateTime.now(),
+          isAnonymous: _anonymous,
         ),
       );
 
@@ -51,6 +53,7 @@ class _SubmitFeedbackScreenState extends State<SubmitFeedbackScreen> {
       setState(() {
         _rating = 4;
         _category = FeedbackCategory.task;
+        _anonymous = false;
         _loading = false;
       });
       await SuccessCelebration.show(context, message: 'Feedback submitted.\nThank you!');
@@ -138,6 +141,28 @@ class _SubmitFeedbackScreenState extends State<SubmitFeedbackScreen> {
                 ),
                 validator: (v) => (v == null || v.trim().length < 5) ? 'Please add a little more detail' : null,
               ),
+              const SizedBox(height: 10),
+
+              // Anonymous toggle
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.cardColor(context),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.borderColor(context)),
+                ),
+                child: SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  secondary: Icon(Icons.visibility_off_outlined, color: AppColors.violet),
+                  title: Text('Submit anonymously', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: AppColors.textPrimaryC(context))),
+                  subtitle: Text('Your name will be hidden from everyone, including admins',
+                      style: TextStyle(fontSize: 11.5, color: AppColors.textSecondaryC(context))),
+                  value: _anonymous,
+                  activeColor: AppColors.violet,
+                  onChanged: (v) => setState(() => _anonymous = v),
+                ),
+              ),
+
               const SizedBox(height: 28),
               GradientButton(
                 label: 'Submit Feedback',

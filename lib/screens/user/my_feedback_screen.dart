@@ -19,6 +19,7 @@ class _MyFeedbackScreenState extends State<MyFeedbackScreen> {
   final _feedbackService = FeedbackService();
   final _searchCtrl = TextEditingController();
   FeedbackCategory? _filter;
+  FeedbackSort _sort = FeedbackSort.newest;
   String _query = '';
 
   @override
@@ -38,6 +39,23 @@ class _MyFeedbackScreenState extends State<MyFeedbackScreen> {
             child: Row(
               children: [
                 Expanded(child: Text('My History', style: Theme.of(context).textTheme.displayMedium)),
+                PopupMenuButton<FeedbackSort>(
+                  icon: Icon(Icons.sort_rounded, color: AppColors.violet),
+                  initialValue: _sort,
+                  onSelected: (v) => setState(() => _sort = v),
+                  itemBuilder: (context) => FeedbackSort.values
+                      .map((s) => PopupMenuItem(
+                            value: s,
+                            child: Row(
+                              children: [
+                                Icon(s.icon, size: 18, color: AppColors.violet),
+                                const SizedBox(width: 10),
+                                Text(s.label),
+                              ],
+                            ),
+                          ))
+                      .toList(),
+                ),
               ],
             ),
           ),
@@ -95,6 +113,7 @@ class _MyFeedbackScreenState extends State<MyFeedbackScreen> {
                           e.message.toLowerCase().contains(_query))
                       .toList();
                 }
+                items = sortFeedbackList(items, _sort);
                 if (items.isEmpty) {
                   return EmptyState(
                     title: _query.isNotEmpty ? 'No matches' : 'Nothing here yet',

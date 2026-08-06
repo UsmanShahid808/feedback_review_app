@@ -65,7 +65,7 @@ class _FeedbackModerationScreenState extends State<FeedbackModerationScreen> {
             const SizedBox(height: 20),
             Text(item.title, style: Theme.of(context).textTheme.headlineMedium),
             const SizedBox(height: 6),
-            Text('${item.userName} · ${DateFormat('MMM d, yyyy · h:mm a').format(item.createdAt)}',
+            Text('${item.displayName} · ${DateFormat('MMM d, yyyy · h:mm a').format(item.createdAt)}',
                 style: const TextStyle(color: AppColors.textSecondary, fontSize: 12.5)),
             const SizedBox(height: 16),
             Container(

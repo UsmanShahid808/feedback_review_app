@@ -17,6 +17,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   final _feedbackService = FeedbackService();
   final _searchCtrl = TextEditingController();
   FeedbackStatus? _filter;
+  FeedbackSort _sort = FeedbackSort.newest;
   String _query = '';
 
   @override
@@ -45,16 +46,38 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 .where((e) =>
                     e.title.toLowerCase().contains(_query) ||
                     e.message.toLowerCase().contains(_query) ||
-                    e.userName.toLowerCase().contains(_query))
+                    e.displayName.toLowerCase().contains(_query))
                 .toList();
           }
+          filtered = sortFeedbackList(filtered, _sort);
 
           return CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(22, 22, 22, 4),
-                  child: Text('Admin Dashboard', style: Theme.of(context).textTheme.displayMedium),
+                  child: Row(
+                    children: [
+                      Expanded(child: Text('Admin Dashboard', style: Theme.of(context).textTheme.displayMedium)),
+                      PopupMenuButton<FeedbackSort>(
+                        icon: Icon(Icons.sort_rounded, color: AppColors.violet),
+                        initialValue: _sort,
+                        onSelected: (v) => setState(() => _sort = v),
+                        itemBuilder: (context) => FeedbackSort.values
+                            .map((s) => PopupMenuItem(
+                                  value: s,
+                                  child: Row(
+                                    children: [
+                                      Icon(s.icon, size: 18, color: AppColors.violet),
+                                      const SizedBox(width: 10),
+                                      Text(s.label),
+                                    ],
+                                  ),
+                                ))
+                            .toList(),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               SliverToBoxAdapter(

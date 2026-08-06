@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 
 /// Category a piece of feedback belongs to.
 enum FeedbackCategory { task, course, service }
@@ -45,6 +46,59 @@ extension FeedbackStatusX on FeedbackStatus {
   }
 }
 
+/// Sort orders available on the History and Admin Dashboard lists.
+enum FeedbackSort { newest, oldest, highestRating, lowestRating }
+
+extension FeedbackSortX on FeedbackSort {
+  String get label {
+    switch (this) {
+      case FeedbackSort.newest:
+        return 'Newest';
+      case FeedbackSort.oldest:
+        return 'Oldest';
+      case FeedbackSort.highestRating:
+        return 'Highest rating';
+      case FeedbackSort.lowestRating:
+        return 'Lowest rating';
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case FeedbackSort.newest:
+        return Icons.arrow_downward_rounded;
+      case FeedbackSort.oldest:
+        return Icons.arrow_upward_rounded;
+      case FeedbackSort.highestRating:
+        return Icons.trending_up_rounded;
+      case FeedbackSort.lowestRating:
+        return Icons.trending_down_rounded;
+    }
+  }
+}
+
+/// Sorts a feedback list in place-safe fashion (returns a new list)
+/// according to the chosen FeedbackSort order. Shared by History and
+/// the Admin Dashboard so both stay consistent.
+List<FeedbackModel> sortFeedbackList(List<FeedbackModel> items, FeedbackSort sort) {
+  final list = List<FeedbackModel>.from(items);
+  switch (sort) {
+    case FeedbackSort.newest:
+      list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      break;
+    case FeedbackSort.oldest:
+      list.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+      break;
+    case FeedbackSort.highestRating:
+      list.sort((a, b) => b.rating.compareTo(a.rating));
+      break;
+    case FeedbackSort.lowestRating:
+      list.sort((a, b) => a.rating.compareTo(b.rating));
+      break;
+  }
+  return list;
+}
+
 class FeedbackModel {
   final String id;
   final String userId;
@@ -56,6 +110,11 @@ class FeedbackModel {
   final FeedbackStatus status;
   final DateTime createdAt;
   final String? adminReply;
+  final bool isAnonymous;
+  // True once the author has opened this item after an admin action
+  // (reply or status change). Older documents won't have this field, so
+  // it defaults to true (nothing to flag) rather than false.
+  final bool seenByUser;
 
   FeedbackModel({
     required this.id,
@@ -68,7 +127,13 @@ class FeedbackModel {
     this.status = FeedbackStatus.pending,
     required this.createdAt,
     this.adminReply,
+    this.isAnonymous = false,
+    this.seenByUser = true,
   });
+
+  /// What to actually display for the author's name, respecting the
+  /// anonymous flag no matter who is viewing (user or admin).
+  String get displayName => isAnonymous ? 'Anonymous' : userName;
 
   Map<String, dynamic> toMap() {
     return {
@@ -81,6 +146,8 @@ class FeedbackModel {
       'status': status.name,
       'createdAt': Timestamp.fromDate(createdAt),
       'adminReply': adminReply,
+      'isAnonymous': isAnonymous,
+      'seenByUser': seenByUser,
     };
   }
 
@@ -96,6 +163,8 @@ class FeedbackModel {
       status: FeedbackStatusX.fromString(map['status'] ?? 'pending'),
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       adminReply: map['adminReply'],
+      isAnonymous: map['isAnonymous'] ?? false,
+      seenByUser: map['seenByUser'] ?? true,
     );
   }
 }

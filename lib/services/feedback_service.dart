@@ -32,14 +32,26 @@ class FeedbackService {
   }
 
   Future<void> updateStatus(String feedbackId, FeedbackStatus status) async {
-    await _col.doc(feedbackId).update({'status': status.name});
+    // Flip seenByUser to false so the author notices their status
+    // changed, mirroring what happens on a reply below.
+    await _col.doc(feedbackId).update({
+      'status': status.name,
+      'seenByUser': false,
+    });
   }
 
   Future<void> addAdminReply(String feedbackId, String reply) async {
     await _col.doc(feedbackId).update({
       'adminReply': reply,
       'status': FeedbackStatus.reviewed.name,
+      'seenByUser': false,
     });
+  }
+
+  /// Called when the author opens a feedback item that has an unseen
+  /// admin update, so the "New" badge clears.
+  Future<void> markSeen(String feedbackId) async {
+    await _col.doc(feedbackId).update({'seenByUser': true});
   }
 
   Future<void> deleteFeedback(String feedbackId) async {
@@ -47,7 +59,7 @@ class FeedbackService {
   }
 
   /// Lets the original author edit their own feedback (title/message/
-  /// rating/category) — only allowed while it's still Pending, both here
+  /// rating/category) - only allowed while it's still Pending, both here
   /// and enforced server-side in firestore.rules.
   Future<void> updateFeedback({
     required String feedbackId,

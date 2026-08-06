@@ -54,7 +54,7 @@ class AppColors {
       );
 
   // -------------------------------------------------------------------
-  // Context-aware helpers — pick the right shade for light vs dark mode.
+  // Context-aware helpers - pick the right shade for light vs dark mode.
   // Widgets should use these instead of the raw constants above for any
   // surface/text that needs to flip with the theme.
   // -------------------------------------------------------------------

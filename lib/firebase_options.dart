@@ -3,7 +3,7 @@
 // Android values below are filled in from this project's
 // google-services.json (package: com.example.feedback_review_app).
 //
-// Web and iOS are still placeholders — only fill those in if you plan
+// Web and iOS are still placeholders - only fill those in if you plan
 // to run this app on web or iOS. To do that, register a Web/iOS app
 // in Firebase Console → Project Settings → Your apps, and copy the
 // matching values in.
