@@ -18,11 +18,11 @@ A mobile feedback collection and analytics app built with Flutter and Firebase, 
 
 | Login | Home | Submit Feedback |
 |:---:|:---:|:---:|
-| ![Login](assets/screenshots/login.jpg) | ![Home](assets/screenshots/home.jpg) | ![Submit](assets/screenshots/submit.jpg) |
+| ![Login](assets/screenshots/login.jpeg) | ![Home](assets/screenshots/home.jpeg) | ![Submit](assets/screenshots/submit.jpeg) |
 
 | History (Search) | Feedback Detail | Dark Mode |
 |:---:|:---:|:---:|
-| ![History](assets/screenshots/history.jpg) | ![Detail](assets/screenshots/detail.jpg) | ![Dark Mode](assets/screenshots/dark_mode.jpg) |
+| ![History](assets/screenshots/history.jpeg) | ![Detail](assets/screenshots/detail.jpeg) | ![Dark Mode](assets/screenshots/dark_mode.jpeg) |
 
 ## ✨ Features
 
